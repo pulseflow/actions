@@ -1,0 +1,40 @@
+name: PR Review Comment
+on:
+  workflow_run:
+    workflows: [PR Review Comment Trigger]
+    types:
+      - completed
+
+jobs:
+  re-review:
+    runs-on: ubuntu-latest
+
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Read PR Number
+        id: pr-number
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+            const [artifact] = allArtifacts.data.artifacts.filter(artifact => artifact.name.startsWith('pr_number-'))
+            if (!artifact) {
+              throw new Error('No PR Number artifact available')
+            }
+
+            const prNumber = artifact.name.slice('pr_number-'.length)
+            core.setOutput('pr-number', prNumber);
+
+      - uses: pulseflow/actions/re-review@v0.0.1
+        with:
+          app-id: ${{ secrets.PULSE_GOALIE_APPLICATION_ID }}
+          private-key: ${{ secrets.PULSE_GOALIE_PRIVATE_KEY }}
+          installation-id: ${{ secrets.PULSE_GOALIE_INSTALLATION_ID }}
+          project-id: PVT_3jesahdew
+          issue-number: ${{ steps.pr-number.outputs.pr-number }}

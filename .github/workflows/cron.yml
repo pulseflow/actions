@@ -1,0 +1,16 @@
+name: Cron
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: pulseflow/actions/cron@v0.0.1
+        with:
+          app-id: ${{ secrets.PULSE_GOALIE_APPLICATION_ID }}
+          private-key: ${{ secrets.PULSE_GOALIE_PRIVATE_KEY }}
+          installation-id: ${{ secrets.PULSE_GOALIE_INSTALLATION_ID }}

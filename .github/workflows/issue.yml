@@ -1,0 +1,12 @@
+name: Issue
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sync Issues
+        uses: pulseflow/actions/issue-sync@v0.0.1
